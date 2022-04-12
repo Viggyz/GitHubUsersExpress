@@ -1,25 +1,28 @@
-import express from 'express';
-import { json } from 'body-parser';
+import { app } from './app'
+import { redisClient } from './make-client';
 
-import { NotFoundError } from './middlewares/not-found-error';
-import { errorHandler } from './middlewares/error-handler'
+const startUp = async () => {
+    console.log("initializing..")
 
-import { searchRouter } from './routes/search';
-import { clearCacheRouter } from './routes/clear-cache';
+    if (!process.env.CACHE_DURATION) {
+        throw new Error("CACHE_DURATION NOT DEFINED");
+    }
 
-const app = express();
-app.use(json());
+    const client = redisClient;
 
-app.use(searchRouter);
-app.use(clearCacheRouter);
-
-app.all("*", async (req, res) => {
-    throw new NotFoundError();
-  });
-
-app.use(errorHandler);
-
+    try {
+        await client.connect();
+        console.log("Redis connected")
+    }
+    catch (err) {
+        console.log(err); //Update this later to throw error
+        throw new Error("Unablke to connect to database")
+    }
+}
+//sudo service redis-server start
 
 app.listen(8000, () => {
     console.log('App listening on 8000');
-})
+});
+
+startUp();
