@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
-import { RequestValidationError } from '../middlewares/request-validation-error';
-import { CacheConnectionError } from '../middlewares/cache-connection-error';
+import { RateLimitExceededError } from '../errors/rate-limit-error-exceeded-error';
+import { RequestValidationError } from '../errors/request-validation-error';
+import { CacheConnectionError } from '../errors/cache-connection-error';
 import { redisClient } from '../make-client';
-import { pushSearchOptions } from '@node-redis/search/dist/commands';
 
 const router = express.Router();
 
@@ -31,19 +31,23 @@ router.post(
 
         try {
             const val = await redisClient.get(req.body.text)
-            let updatedUsers: [UpdatedUser];
+            let updatedUsers: UpdatedUser[];
+            let users: AxiosResponse;
             if (val == null) {
-                const users = await axios.get('http://api.github.com/search/users', {
+                users = await axios.get('http://api.github.com/search/users', {
                     params: { //Make this env
                         q: req.body.text,
                     }
                 });
-                if (users.data.items) {
+                if (users.status === 200) {
                     updatedUsers = users.data.items.map((user: any) => {
-                        return { username: user.login, car: "hi", id: user.id, avatar_url: user.avatar_url, profile_url: user.url }
+                        return { username: user.login, id: user.id, avatar_url: user.avatar_url, profile_url: user.html_url }
                     });
-
+                    updatedUsers = updatedUsers.slice(0, 15);
+                    // Increase Rate limit
+                    // Write unit tests
                     await redisClient.setEx(req.body.text, parseInt(process.env.CACHE_DURATION!), JSON.stringify(updatedUsers));
+
                 }
                 else {
                     throw new Error("Invalid API Query")
@@ -56,7 +60,12 @@ router.post(
 
             res.send({ users: updatedUsers })
         }
-        catch {
+        catch (err: any | AxiosError) {
+            if (axios.isAxiosError(err) && err.response!.status === 403) {
+                console.log(err.response!.status)
+                throw new RateLimitExceededError();
+            }
+
             throw new CacheConnectionError();
         }
 

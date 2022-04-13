@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 
 import { redisClient } from '../make-client';
-import { CacheConnectionError } from '../middlewares/cache-connection-error';
+import { CacheConnectionError } from '../errors/cache-connection-error';
 
 const router = express.Router();
 
