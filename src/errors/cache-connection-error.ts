@@ -6,7 +6,7 @@ export class CacheConnectionError extends CustomError {
     constructor() {
         super("Failed to Connect to Cache");
 
-        Object.setPrototypeOf(this, CacheConnectionError);
+        Object.setPrototypeOf(this, CacheConnectionError.prototype);
     }
 
     serializeErrors() {

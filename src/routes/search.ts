@@ -33,6 +33,7 @@ router.post(
             const val = await redisClient.get(req.body.text)
             let updatedUsers: UpdatedUser[];
             let users: AxiosResponse;
+
             if (val == null) {
                 users = await axios.get('http://api.github.com/search/users', {
                     params: { //Make this env
@@ -50,7 +51,7 @@ router.post(
 
                 }
                 else {
-                    throw new Error("Invalid API Query")
+                    throw new Error();
                 }
 
             }
@@ -60,7 +61,7 @@ router.post(
 
             res.send({ users: updatedUsers })
         }
-        catch (err: any | AxiosError) {
+        catch (err: AxiosError | any) {
             if (axios.isAxiosError(err) && err.response!.status === 403) {
                 console.log(err.response!.status)
                 throw new RateLimitExceededError();

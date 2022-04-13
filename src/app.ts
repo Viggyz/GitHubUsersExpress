@@ -8,16 +8,18 @@ import { errorHandler } from './middlewares/error-handler'
 import { searchRouter } from './routes/search';
 import { clearCacheRouter } from './routes/clear-cache';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express'
+const swaggerDocument = require('./swagger.json');
 
 const app = express();
 app.use(json());
 app.use(cors())
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(searchRouter);
 app.use(clearCacheRouter);
 
 app.all("*", async (req, res) => {
-  console.log("Nope")
   throw new NotFoundError();
 });
 

@@ -1,0 +1,156 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Search Application for GitHub Users",
+        "version": "1.0.0",
+        "title": "GitHub Users Search",
+        "contact": {
+            "email": "abc@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "schemes": ["http"],
+    "host": "localhost:8000",
+    "basePath": "/api",
+    "paths" : {
+        "/search" : {
+            "post" : {
+                "summary" : "Find users given username ",
+                "description": "Find all users with the provided username",
+                "produces": ["application/json"],
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Query text",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Search"
+                            }
+                        
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Users succesfully found",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/searchResponse"
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate Limit Exceeded for GitHub API calls",
+                        "schema": {
+                            "$ref": "#/definitions/rateLimitExceeded"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request Parameters",
+                        "schema": {
+                            "$ref": "#/definitions/validationRequestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Cache Error",
+                        "schema": {
+                            "$ref": "#/definitions/cacheConnectionError"
+                        }
+                    }
+                }
+            }
+        },
+        "/clear-cache" : {
+            "post" : {
+                "summary" : "Clear the Redis cache",
+                "description": "Clears the Redis cache of saved users",
+                "produces": ["application/json"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Succesfully cleared cache",
+                        "schema": {
+                            "$ref": "#/definitions/cacheCleared"
+                        }
+                    },
+                    "400": {
+                        "description": "Cache clear failed",
+                        "schema": {
+                            "$ref": "#/definitions/cacheConnectionError"
+                        }
+                    }
+                }
+            }
+        }
+    }, 
+    "definitions": {
+        "Search": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "cacheCleared": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "searchResponse": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "profile_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "validationRequestError": {
+            "type": "object",
+            "properties": {
+                "parameter": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "rateLimitExceeded": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "cacheConnectionError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
