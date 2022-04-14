@@ -63,7 +63,6 @@ router.post(
         }
         catch (err: AxiosError | any) {
             if (axios.isAxiosError(err) && err.response!.status === 403) {
-                console.log(err.response!.status)
                 throw new RateLimitExceededError();
             }
 

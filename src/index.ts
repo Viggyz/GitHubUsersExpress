@@ -16,7 +16,7 @@ const startUp = async () => {
     }
     catch (err) {
         console.log(err); //Update this later to throw error
-        throw new Error("Unablke to connect to database")
+        throw new Error("Unable to connect to Redis")
     }
 }
 //sudo service redis-server start
