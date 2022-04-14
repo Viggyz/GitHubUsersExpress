@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "cd client && npm run build",
     "start": "ts-node-dev src/index.ts"
   },
   "keywords": [],

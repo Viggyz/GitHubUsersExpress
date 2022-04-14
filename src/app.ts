@@ -10,8 +10,12 @@ import { clearCacheRouter } from './routes/clear-cache';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express'
 const swaggerDocument = require('./swagger.json');
+import path from 'path'
 
 const app = express();
+
+app.use(express.static(path.join(__dirname, '../client/build')))
+
 app.use(json());
 app.use(cors())
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

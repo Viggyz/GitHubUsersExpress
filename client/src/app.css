@@ -1,0 +1,10 @@
+.main-container {
+    display: flexbox;
+    justify-items: center;
+    border: 1px red solid;
+}
+
+.input-box {
+    margin: 0 auto;
+    display: block
+}
