@@ -7,14 +7,14 @@ import { RequestValidationError } from '../errors/request-validation-error';
 import { CacheConnectionError } from '../errors/cache-connection-error';
 import { redisClient } from '../make-client';
 
-const router = express.Router();
-
-interface UpdatedUser {
+interface UserProps {
     username: string;
-    id: number;
-    avatar_url: string;
+    id: number,
+    avatar_url: string,
     profile_url: string;
 }
+
+const router = express.Router();
 
 router.post(
     "/api/search",
@@ -30,12 +30,11 @@ router.post(
         }
 
         try {
-            const val = await redisClient.get(req.body.text)
-            let updatedUsers: UpdatedUser[];
-            let users: AxiosResponse;
+            const users = await redisClient.get(req.body.text)
+            let updatedUsers: UserProps[];
 
-            if (val == null) {
-                users = await axios.get('http://api.github.com/search/users', {
+            if (users == null) {
+                let users: AxiosResponse = await axios.get('http://api.github.com/search/users', {
                     params: { //Make this env
                         q: req.body.text,
                     }
@@ -56,7 +55,7 @@ router.post(
 
             }
             else {
-                updatedUsers = JSON.parse(val);
+                updatedUsers = JSON.parse(users);
             }
 
             res.send({ users: updatedUsers })
